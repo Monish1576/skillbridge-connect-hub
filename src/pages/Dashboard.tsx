@@ -8,8 +8,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState<any>(null);
+  const [userProjects, setUserProjects] = useState<any[]>([]);
+  
+  useEffect(() => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    
+    // Load user data
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      setUserData(JSON.parse(storedUserData));
+    }
+    
+    // Load projects
+    const storedProjects = localStorage.getItem('userProjects');
+    if (storedProjects) {
+      setUserProjects(JSON.parse(storedProjects));
+    }
+  }, [navigate]);
+
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
@@ -19,11 +46,17 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 mb-4">
-                  <AvatarImage src="public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png" />
-                  <AvatarFallback>AJ</AvatarFallback>
+                  <AvatarImage src={userData?.profilePicture} />
+                  <AvatarFallback>
+                    {userData?.fullName 
+                      ? userData.fullName.split(" ").map((n: string) => n[0]).join("")
+                      : "U"}
+                  </AvatarFallback>
                 </Avatar>
-                <h2 className="text-xl font-bold">Alex Johnson</h2>
-                <p className="text-sm text-muted-foreground">Computer Science • 3rd Year</p>
+                <h2 className="text-xl font-bold">{userData?.fullName || "User"}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {userData?.department || ""} • {userData?.role || ""}
+                </p>
               </div>
               
               <div className="border-t pt-6">
@@ -97,13 +130,17 @@ export default function Dashboard() {
                   <p className="text-muted-foreground">Manage your projects, requests, and messages</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Project
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <Settings className="h-4 w-4" />
-                  </Button>
+                  <Link to="/new-project">
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      New Project
+                    </Button>
+                  </Link>
+                  <Link to="/profile-setup">
+                    <Button variant="outline" size="icon">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
               
@@ -116,44 +153,89 @@ export default function Dashboard() {
                 
                 <TabsContent value="projects" className="mt-6 space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
-                    {dashboardProjects.map((project) => (
-                      <Card key={project.id}>
-                        <CardContent className="p-6">
-                          <div>
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-lg font-semibold">{project.title}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {project.description}
-                                </p>
+                    {userProjects.length > 0 ? (
+                      userProjects.map((project) => (
+                        <Card key={project.id}>
+                          <CardContent className="p-6">
+                            <div>
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h3 className="text-lg font-semibold">{project.title}</h3>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {project.description}
+                                  </p>
+                                </div>
+                                <Badge variant={
+                                  project.status === "Planning" ? "secondary" : 
+                                  project.status === "In Progress" ? "default" : 
+                                  "outline"
+                                }>
+                                  {project.status}
+                                </Badge>
                               </div>
-                              <Badge variant={
-                                project.status === "Planning" ? "secondary" : 
-                                project.status === "In Progress" ? "default" : 
-                                "outline"
-                              }>
-                                {project.status}
-                              </Badge>
+                              
+                              <div className="flex -space-x-2 mb-4">
+                                {project.members.map((member: any, i: number) => (
+                                  <Avatar key={i} className="h-8 w-8 border-2 border-background">
+                                    <AvatarImage src={member.avatar} />
+                                    <AvatarFallback>
+                                      {member.name ? member.name.split(" ").map((n: string) => n[0]).join("") : "U"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ))}
+                              </div>
+                              
+                              <div className="text-sm text-muted-foreground mb-4">
+                                Created {new Date(project.createdAt).toLocaleDateString()}
+                              </div>
+                              
+                              <Button variant="secondary" className="w-full">View Project</Button>
                             </div>
-                            
-                            <div className="flex -space-x-2 mb-4">
-                              {project.members.map((member, i) => (
-                                <Avatar key={i} className="h-8 w-8 border-2 border-background">
-                                  <AvatarImage src={member.avatar} />
-                                  <AvatarFallback>{member.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
-                                </Avatar>
-                              ))}
-                            </div>
-                            
-                            <div className="text-sm text-muted-foreground mb-4">
-                              Updated {project.updatedAt}
-                            </div>
-                            
-                            <Button variant="secondary" className="w-full">View Project</Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      <>
+                        {dashboardProjects.map((project) => (
+                          <Card key={project.id}>
+                            <CardContent className="p-6">
+                              <div>
+                                <div className="flex justify-between items-start mb-4">
+                                  <div>
+                                    <h3 className="text-lg font-semibold">{project.title}</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {project.description}
+                                    </p>
+                                  </div>
+                                  <Badge variant={
+                                    project.status === "Planning" ? "secondary" : 
+                                    project.status === "In Progress" ? "default" : 
+                                    "outline"
+                                  }>
+                                    {project.status}
+                                  </Badge>
+                                </div>
+                                
+                                <div className="flex -space-x-2 mb-4">
+                                  {project.members.map((member, i) => (
+                                    <Avatar key={i} className="h-8 w-8 border-2 border-background">
+                                      <AvatarImage src={member.avatar} />
+                                      <AvatarFallback>{member.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                    </Avatar>
+                                  ))}
+                                </div>
+                                
+                                <div className="text-sm text-muted-foreground mb-4">
+                                  Updated {project.updatedAt}
+                                </div>
+                                
+                                <Button variant="secondary" className="w-full">View Project</Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </>
+                    )}
                     
                     <Card className="border-dashed">
                       <CardContent className="p-6 h-full flex flex-col items-center justify-center text-center">
@@ -164,7 +246,9 @@ export default function Dashboard() {
                         <p className="text-sm text-muted-foreground mb-4">
                           Start a new project or find collaborators for your idea
                         </p>
-                        <Button>New Project</Button>
+                        <Link to="/new-project">
+                          <Button>New Project</Button>
+                        </Link>
                       </CardContent>
                     </Card>
                   </div>

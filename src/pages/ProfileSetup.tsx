@@ -5,13 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/Logo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSetup() {
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState({
-    fullName: "Alex Johnson",
-    role: "Student",
+    fullName: "",
+    role: "",
     department: "",
     skills: "",
     bio: "",
@@ -24,6 +26,22 @@ export default function ProfileSetup() {
   });
 
   const [previewing, setPreviewing] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Load existing user data if available
+    const userData = localStorage.getItem('userData');
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      setProfileData(prev => ({
+        ...prev,
+        ...parsedData
+      }));
+      
+      if (parsedData.profilePicture) {
+        setPreviewing(parsedData.profilePicture);
+      }
+    }
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,9 +64,20 @@ export default function ProfileSetup() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Profile setup submitted:", profileData);
+    
+    // Update userData with new profile data
+    const updatedUserData = {
+      ...profileData,
+      profilePicture: previewing
+    };
+    
+    // Save to localStorage
+    localStorage.setItem('userData', JSON.stringify(updatedUserData));
+    localStorage.setItem('isLoggedIn', 'true');
+    
+    console.log("Profile setup submitted:", updatedUserData);
     toast.success("Profile setup complete!");
-    window.location.href = "/dashboard";
+    navigate("/dashboard");
   };
 
   return (
@@ -65,7 +94,7 @@ export default function ProfileSetup() {
                 <Avatar className="h-32 w-32">
                   <AvatarImage src={previewing || ""} />
                   <AvatarFallback className="text-2xl">
-                    {profileData.fullName.split(" ").map(n => n[0]).join("")}
+                    {profileData.fullName ? profileData.fullName.split(" ").map(n => n[0]).join("") : "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -85,6 +114,18 @@ export default function ProfileSetup() {
                 </div>
               </div>
               <div className="flex-1 grid gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Your full name"
+                    value={profileData.fullName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="department">Department/Major</Label>
@@ -97,15 +138,26 @@ export default function ProfileSetup() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="pronouns">Pronouns (Optional)</Label>
+                    <Label htmlFor="role">Role</Label>
                     <Input
-                      id="pronouns"
-                      name="pronouns"
-                      placeholder="They/Them, She/Her, etc."
-                      value={profileData.pronouns}
+                      id="role"
+                      name="role"
+                      placeholder="Student, Faculty, etc."
+                      value={profileData.role}
                       onChange={handleChange}
                     />
                   </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="pronouns">Pronouns (Optional)</Label>
+                  <Input
+                    id="pronouns"
+                    name="pronouns"
+                    placeholder="They/Them, She/Her, etc."
+                    value={profileData.pronouns}
+                    onChange={handleChange}
+                  />
                 </div>
                 
                 <div className="space-y-2">
@@ -172,7 +224,7 @@ export default function ProfileSetup() {
             </div>
             
             <div className="flex justify-end">
-              <Button type="submit">Complete Profile</Button>
+              <Button type="submit">Update Profile</Button>
             </div>
           </form>
         </div>

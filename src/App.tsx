@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import NewProject from "./pages/NewProject";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/new-project" element={<NewProject />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

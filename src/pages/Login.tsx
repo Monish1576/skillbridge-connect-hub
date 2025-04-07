@@ -3,19 +3,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // In a real application, you would validate against a backend
+    // For now, we'll simulate a successful login and store user data
+    const userData = {
+      fullName: "Your Name",
+      email: email,
+      role: "Student",
+      department: "Computer Science",
+      skills: "React, JavaScript, UI Design",
+      profilePicture: "public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png"
+    };
+    
+    // Store in localStorage
+    localStorage.setItem('userData', JSON.stringify(userData));
+    localStorage.setItem('isLoggedIn', 'true');
+    
     console.log("Login attempted with:", { email, password });
     toast.success("Logged in successfully!");
-    window.location.href = "/dashboard";
+    navigate("/dashboard");
   };
 
   return (
