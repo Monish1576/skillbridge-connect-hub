@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User, Bell, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
 export function NavBar() {
@@ -42,6 +42,14 @@ export function NavBar() {
     setUserData(null);
     toast.success("Logged out successfully");
     navigate("/");
+  };
+
+  const handleNotificationClick = () => {
+    navigate("/feature-coming-soon/notifications");
+  };
+
+  const handleMessageClick = () => {
+    navigate("/feature-coming-soon/messages");
   };
 
   return (
@@ -94,6 +102,27 @@ export function NavBar() {
           </nav>
           
           <div className="flex items-center gap-2">
+            {isLoggedIn && (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="relative"
+                  onClick={handleNotificationClick}
+                >
+                  <Bell className="h-5 w-5" />
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={handleMessageClick}
+                >
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+            
             <ThemeToggle />
             
             {isLoggedIn && userData ? (

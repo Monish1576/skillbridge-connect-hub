@@ -20,6 +20,8 @@ import Privacy from "./pages/Privacy";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import NewProject from "./pages/NewProject";
+import UserProfile from "./pages/UserProfile";
+import FeatureComingSoon from "./pages/FeatureComingSoon";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +56,8 @@ const App = () => {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/new-project" element={<NewProject />} />
+            <Route path="/user/:userId" element={<UserProfile />} />
+            <Route path="/feature-coming-soon/:feature" element={<FeatureComingSoon />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
