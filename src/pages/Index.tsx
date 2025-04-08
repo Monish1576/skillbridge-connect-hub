@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Users, Code, Search, MessageSquare, Globe, Briefcase, Shield, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Animation variants
 const fadeIn = {
@@ -389,4 +390,3 @@ export default function Index() {
     </div>
   );
 }
-
