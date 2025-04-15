@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
 import Auth from "@/pages/Auth";
@@ -10,6 +10,7 @@ import NewProject from "@/pages/NewProject";
 import UserProfile from "@/pages/UserProfile";
 import ProfileSetup from "@/pages/ProfileSetup";
 import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/profile/:userId" element={<UserProfile />} />
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/login" element={<Navigate to="/auth" replace />} />
         </Routes>
         <Toaster />
       </Router>

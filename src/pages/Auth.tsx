@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,47 +9,69 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 
 export default function Auth() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Check your email for the confirmation link!");
-      navigate("/profile-setup");
+      if (error) {
+        toast.error(error.message);
+      } else if (data.user) {
+        toast.success("Account created successfully! Check your email for confirmation.");
+        // Navigate to profile setup immediately for better UX
+        navigate("/profile-setup");
+      }
+    } catch (error) {
+      console.error("Sign up error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Successfully signed in!");
-      navigate("/dashboard");
+      if (error) {
+        toast.error(error.message);
+      } else if (data.user) {
+        toast.success("Successfully signed in!");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Sign in error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -82,6 +104,7 @@ export default function Auth() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -92,6 +115,7 @@ export default function Auth() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -111,6 +135,7 @@ export default function Auth() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
                     required
                   />
                 </div>
@@ -121,6 +146,7 @@ export default function Auth() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                     required
                   />
                 </div>
