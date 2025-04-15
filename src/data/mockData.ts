@@ -2,72 +2,72 @@
 // Mock data for profiles and projects
 export const profiles = [
   {
-    id: 1,
-    name: "Alex Johnson",
+    id: "1",
+    name: "Arjun Sharma",
     role: "Student",
     department: "Computer Science",
     avatar: "public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png",
     skills: ["JavaScript", "React", "Node.js", "TypeScript"]
   },
   {
-    id: 2,
-    name: "Dr. Sarah Williams",
+    id: "2",
+    name: "Dr. Priya Patel",
     role: "Lecturer",
     department: "Computer Science",
     avatar: "public/lovable-uploads/35ad675b-9325-4c13-aa1f-b885708a3ff8.png",
     skills: ["Python", "Machine Learning", "Deep Learning", "Data Analysis"]
   },
   {
-    id: 3,
-    name: "Michael Chen",
+    id: "3",
+    name: "Vikram Malhotra",
     role: "Student",
     department: "Electrical Engineering",
     avatar: "public/lovable-uploads/dc24bf8c-9388-42bd-8479-210a4428b1f7.png",
     skills: ["Circuit Design", "Arduino", "IoT", "Robotics"]
   },
   {
-    id: 4,
-    name: "Prof. James Wilson",
+    id: "4",
+    name: "Prof. Rahul Verma",
     role: "Lecturer",
     department: "Business",
     avatar: "public/lovable-uploads/a13b13cc-9079-4194-9cc7-67cdffeddba8.png",
     skills: ["Business Strategy", "Marketing", "Finance", "Leadership"]
   },
   {
-    id: 5,
-    name: "Emily Rodriguez",
+    id: "5",
+    name: "Meera Rajput",
     role: "Student",
     department: "Graphic Design",
     avatar: "public/lovable-uploads/e90a5653-7ae3-4c4f-a254-5829b53b5172.png",
     skills: ["UI/UX Design", "Adobe Photoshop", "Illustrator", "Typography"]
   },
   {
-    id: 6,
-    name: "David Kim",
+    id: "6",
+    name: "Aditya Khanna",
     role: "Student",
     department: "Computer Science",
     avatar: "public/lovable-uploads/545fb43e-c4c3-433f-adbe-88ad1dcb2f33.png",
     skills: ["Mobile Development", "React Native", "Flutter", "Firebase"]
   },
   {
-    id: 7,
-    name: "Dr. Lisa Thompson",
+    id: "7",
+    name: "Dr. Anjali Desai",
     role: "Lecturer",
     department: "Physics",
     avatar: "public/lovable-uploads/35ad675b-9325-4c13-aa1f-b885708a3ff8.png",
     skills: ["Quantum Physics", "Astrophysics", "Data Analysis", "Research Methodology"]
   },
   {
-    id: 8,
-    name: "Robert Garcia",
+    id: "8",
+    name: "Ravi Kapoor",
     role: "Student",
     department: "Mathematics",
     avatar: "public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png",
     skills: ["Statistics", "Calculus", "Linear Algebra", "Data Modeling"]
   },
   {
-    id: 9,
-    name: "Jennifer Lee",
+    id: "9",
+    name: "Nisha Singh",
     role: "Student",
     department: "Computer Science",
     avatar: "public/lovable-uploads/e90a5653-7ae3-4c4f-a254-5829b53b5172.png",
@@ -77,7 +77,7 @@ export const profiles = [
 
 export const projects = [
   {
-    id: 1,
+    id: "1",
     title: "Smart Campus Navigation",
     description: "A mobile app that helps students navigate the campus efficiently.",
     status: "In Progress",
@@ -85,7 +85,7 @@ export const projects = [
     skills: ["React Native", "Google Maps API", "Firebase"]
   },
   {
-    id: 2,
+    id: "2",
     title: "AI Study Assistant",
     description: "An AI-powered tool to help students organize study materials and create personalized learning plans.",
     status: "Looking for Collaborators",
@@ -93,7 +93,7 @@ export const projects = [
     skills: ["Python", "Machine Learning", "NLP", "React"]
   },
   {
-    id: 3,
+    id: "3",
     title: "Smart Energy Monitor",
     description: "IoT device to monitor and optimize energy usage in college buildings.",
     status: "Looking for Collaborators",
@@ -101,7 +101,7 @@ export const projects = [
     skills: ["Arduino", "IoT", "PCB Design", "Data Visualization"]
   },
   {
-    id: 4,
+    id: "4",
     title: "College Marketplace App",
     description: "A platform for students to buy and sell used textbooks and other items within the college community.",
     status: "Planning",
@@ -109,7 +109,7 @@ export const projects = [
     skills: ["React", "Node.js", "MongoDB", "UI/UX Design"]
   },
   {
-    id: 5,
+    id: "5",
     title: "Virtual Study Groups",
     description: "A web application to create and manage virtual study groups for collaborative learning.",
     status: "In Progress",
@@ -117,7 +117,7 @@ export const projects = [
     skills: ["React", "WebRTC", "Socket.io", "Firebase"]
   },
   {
-    id: 6,
+    id: "6",
     title: "Research Publication Tracker",
     description: "A tool to help researchers track and manage their publications and citations.",
     status: "Complete",
