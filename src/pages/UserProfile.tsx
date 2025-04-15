@@ -22,11 +22,14 @@ export default function UserProfile() {
     // Simulating API call to fetch user profile
     setLoading(true);
     setTimeout(() => {
-      const foundProfile = profiles.find(p => p.id.toString() === userId);
+      const foundProfile = profiles.find(p => p.id === userId);
       if (foundProfile) {
         setProfile(foundProfile);
         // Filter projects that may belong to this user (for mock data)
-        const filteredProjects = projects.filter((_, index) => index % profiles.length === (foundProfile.id - 1) % profiles.length);
+        // Convert string IDs to numbers for comparison
+        const userIdNum = parseInt(foundProfile.id);
+        const profilesLength = profiles.length;
+        const filteredProjects = projects.filter((_, index) => index % profilesLength === (userIdNum - 1) % profilesLength);
         setUserProjects(filteredProjects);
       }
       setLoading(false);
