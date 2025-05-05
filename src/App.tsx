@@ -10,6 +10,8 @@ import NewProject from "@/pages/NewProject";
 import UserProfile from "@/pages/UserProfile";
 import ProfileSetup from "@/pages/ProfileSetup";
 import Dashboard from "@/pages/Dashboard";
+import About from "@/pages/About";
+import SignUp from "@/pages/SignUp";
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/profile-setup" element={<ProfileSetup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Navigate to="/auth" replace />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/about" element={<About />} />
         </Routes>
         <Toaster />
       </Router>

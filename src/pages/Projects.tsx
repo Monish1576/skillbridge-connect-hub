@@ -71,18 +71,11 @@ export default function Projects() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ongoingProjects.map((project) => (
                 <Card key={project.id} className="overflow-hidden">
-                  <div className="relative aspect-video bg-muted">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="object-cover w-full h-full"
-                    />
-                    <Badge className="absolute top-2 right-2" variant={project.status === "Looking for Collaborators" ? "destructive" : "secondary"}>
-                      {project.status}
-                    </Badge>
-                  </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-lg mb-2">{project.title}</h3>
+                    <Badge className="mb-3" variant={project.status === "Looking for Collaborators" ? "destructive" : "secondary"}>
+                      {project.status}
+                    </Badge>
                     <p className="text-sm text-muted-foreground mb-4">
                       {project.description}
                     </p>
@@ -110,7 +103,6 @@ export default function Projects() {
                       <div className="flex -space-x-2">
                         {project.members.map((member, i) => (
                           <Avatar key={i} className="h-8 w-8 border-2 border-background">
-                            <AvatarImage src={member.avatar} />
                             <AvatarFallback>{member.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                           </Avatar>
                         ))}
@@ -134,18 +126,11 @@ export default function Projects() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {completedProjects.map((project) => (
                 <Card key={project.id} className="overflow-hidden">
-                  <div className="relative aspect-video bg-muted">
-                    <img
-                      src={project.image}
-                      alt={project.title}
-                      className="object-cover w-full h-full"
-                    />
-                    <Badge className="absolute top-2 right-2" variant="outline">
-                      Completed
-                    </Badge>
-                  </div>
                   <div className="p-6">
                     <h3 className="font-semibold text-lg mb-2">{project.title}</h3>
+                    <Badge className="mb-3" variant="outline">
+                      Completed
+                    </Badge>
                     <p className="text-sm text-muted-foreground mb-4">
                       {project.description}
                     </p>
@@ -190,7 +175,6 @@ export default function Projects() {
                       <div className="flex -space-x-2">
                         {project.members.map((member, i) => (
                           <Avatar key={i} className="h-8 w-8 border-2 border-background">
-                            <AvatarImage src={member.avatar} />
                             <AvatarFallback>{member.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                           </Avatar>
                         ))}
@@ -209,21 +193,20 @@ export default function Projects() {
   );
 }
 
-// Sample data
+// Sample data with Andhra/Telangana names
 const ongoingProjects = [
   {
     id: 1,
     title: "Smart Campus Navigation",
     description: "A mobile app that helps students navigate the campus efficiently.",
     status: "In Progress",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["React Native", "Google Maps API", "Firebase"],
     date: "2 days ago",
     team: 4,
     priority: "Medium",
     members: [
-      { name: "Alex Johnson", avatar: "public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png" },
-      { name: "Emily Rodriguez", avatar: "public/lovable-uploads/e90a5653-7ae3-4c4f-a254-5829b53b5172.png" }
+      { name: "Ravi Krishna" },
+      { name: "Priya Reddy" }
     ]
   },
   {
@@ -231,13 +214,12 @@ const ongoingProjects = [
     title: "AI Study Assistant",
     description: "An AI-powered tool to help students organize study materials and create personalized learning plans.",
     status: "Looking for Collaborators",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["Python", "Machine Learning", "NLP", "React"],
     date: "5 days ago",
     team: 3,
     priority: "High",
     members: [
-      { name: "Dr. Sarah Williams", avatar: "public/lovable-uploads/35ad675b-9325-4c13-aa1f-b885708a3ff8.png" }
+      { name: "Dr. Suresh Babu" }
     ]
   },
   {
@@ -245,13 +227,12 @@ const ongoingProjects = [
     title: "Smart Energy Monitor",
     description: "IoT device to monitor and optimize energy usage in college buildings.",
     status: "Looking for Collaborators",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["Arduino", "IoT", "PCB Design", "Data Visualization"],
     date: "1 week ago",
     team: 4,
     priority: "Medium",
     members: [
-      { name: "Michael Chen", avatar: "public/lovable-uploads/dc24bf8c-9388-42bd-8479-210a4428b1f7.png" }
+      { name: "Venkat Rao" }
     ]
   },
   {
@@ -259,13 +240,12 @@ const ongoingProjects = [
     title: "College Marketplace App",
     description: "A platform for students to buy and sell used textbooks and other items within the college community.",
     status: "Planning",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["React", "Node.js", "MongoDB", "UI/UX Design"],
     date: "2 weeks ago",
     team: 5,
     priority: "Low",
     members: [
-      { name: "Emily Rodriguez", avatar: "public/lovable-uploads/e90a5653-7ae3-4c4f-a254-5829b53b5172.png" }
+      { name: "Lakshmi Sharma" }
     ]
   }
 ];
@@ -275,28 +255,26 @@ const completedProjects = [
     id: 1,
     title: "Virtual Study Group Platform",
     description: "A web application for students to form and manage virtual study groups.",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["React", "Firebase", "WebRTC", "Real-time Communication"],
     completedDate: "Oct 15, 2023",
     rating: 4.8,
     feedback: "Excellent project that's now being used by over 200 students in our college.",
     members: [
-      { name: "Alex Johnson", avatar: "public/lovable-uploads/31753596-2d00-401f-a90b-826dea0b80f2.png" },
-      { name: "Emily Rodriguez", avatar: "public/lovable-uploads/e90a5653-7ae3-4c4f-a254-5829b53b5172.png" }
+      { name: "Akhil Varma" },
+      { name: "Divya Teja" }
     ]
   },
   {
     id: 2,
     title: "Automated Attendance System",
     description: "A facial recognition system for automating class attendance tracking.",
-    image: "public/lovable-uploads/1b73ab93-94f5-4cf6-9f9c-1dd1aa98ae55.png",
     skills: ["Python", "OpenCV", "Machine Learning", "Face Recognition"],
     completedDate: "Aug 30, 2023",
     rating: 4.5,
     feedback: "Successfully implemented in 5 classrooms. The department is considering expanding it campus-wide.",
     members: [
-      { name: "Dr. Sarah Williams", avatar: "public/lovable-uploads/35ad675b-9325-4c13-aa1f-b885708a3ff8.png" },
-      { name: "Michael Chen", avatar: "public/lovable-uploads/dc24bf8c-9388-42bd-8479-210a4428b1f7.png" }
+      { name: "Dr. Krishna Prasad" },
+      { name: "Nandini Devi" }
     ]
   }
 ];
