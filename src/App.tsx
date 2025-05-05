@@ -12,27 +12,30 @@ import ProfileSetup from "@/pages/ProfileSetup";
 import Dashboard from "@/pages/Dashboard";
 import About from "@/pages/About";
 import SignUp from "@/pages/SignUp";
+import React from "react";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<Index />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/new-project" element={<NewProject />} />
-          <Route path="/profile/:userId" element={<UserProfile />} />
-          <Route path="/profile-setup" element={<ProfileSetup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/login" element={<Navigate to="/auth" replace />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
-        <Toaster />
-      </Router>
-    </AuthProvider>
+    <React.StrictMode>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/new-project" element={<NewProject />} />
+            <Route path="/profile/:userId" element={<UserProfile />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/login" element={<Navigate to="/auth" replace />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </AuthProvider>
+    </React.StrictMode>
   );
 }
 
