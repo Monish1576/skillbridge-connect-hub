@@ -3,17 +3,58 @@ import { useState, useEffect } from "react";
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { profiles, projects } from "@/data/mockData";
 import { SearchFilters } from "@/components/explore/SearchFilters";
 import { ProfilesTab } from "@/components/explore/ProfilesTab";
 import { ProjectsTab } from "@/components/explore/ProjectsTab";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { projects } from "@/data/mockData"; // Keep mock projects for now
+
+interface Profile {
+  id: string;
+  full_name: string;
+  role: string;
+  department: string;
+  avatar_url?: string;
+  skills?: string[];
+}
 
 export default function Explore() {
   const [searchTerm, setSearchTerm] = useState("");
   const [department, setDepartment] = useState("all-departments");
   const [role, setRole] = useState("all-roles");
-  const [filteredProfiles, setFilteredProfiles] = useState(profiles);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [filteredProjects, setFilteredProjects] = useState(projects);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch profiles from Supabase
+  useEffect(() => {
+    async function fetchProfiles() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, role, department, avatar_url, skills');
+        
+        if (error) {
+          console.error('Error fetching profiles:', error);
+          toast.error('Failed to load profiles');
+        } else {
+          console.log('Profiles fetched:', data);
+          setProfiles(data || []);
+          setFilteredProfiles(data || []);
+        }
+      } catch (error) {
+        console.error('Error in fetchProfiles:', error);
+        toast.error('An unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchProfiles();
+  }, []);
   
   // Clear all filters
   const clearFilters = () => {
@@ -33,16 +74,16 @@ export default function Explore() {
     const profileResults = profiles.filter(profile => {
       // Check if search term matches name or skills
       const matchesSearch = searchTerm === "" || 
-        profile.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        profile.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+        (profile.full_name && profile.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (profile.skills && profile.skills.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase())));
       
       // Check if department filter matches
       const matchesDepartment = department === "all-departments" || 
-        profile.department.toLowerCase().includes(department.replace(/-/g, " ").toLowerCase());
+        (profile.department && profile.department.toLowerCase().includes(department.replace(/-/g, " ").toLowerCase()));
       
       // Check if role filter matches
       const matchesRole = role === "all-roles" || 
-        profile.role.toLowerCase() === role.toLowerCase();
+        (profile.role && profile.role.toLowerCase() === role.toLowerCase());
       
       // Return true if all filters match
       return matchesSearch && matchesDepartment && matchesRole;
@@ -62,7 +103,7 @@ export default function Explore() {
     });
     
     setFilteredProjects(projectResults);
-  }, [searchTerm, department, role]);
+  }, [searchTerm, department, role, profiles]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -71,7 +112,7 @@ export default function Explore() {
         <div className="space-y-4">
           <h1 className="text-3xl font-bold">Explore</h1>
           <p className="text-muted-foreground">
-            Find students, lecturers, and projects based on skills and interests.
+            Find students, faculty, and projects based on skills and interests.
           </p>
           
           <SearchFilters 
@@ -91,10 +132,16 @@ export default function Explore() {
             </TabsList>
             
             <TabsContent value="people" className="mt-6">
-              <ProfilesTab 
-                filteredProfiles={filteredProfiles}
-                clearFilters={clearFilters}
-              />
+              {loading ? (
+                <div className="text-center py-10">
+                  <p>Loading profiles...</p>
+                </div>
+              ) : (
+                <ProfilesTab 
+                  filteredProfiles={filteredProfiles}
+                  clearFilters={clearFilters}
+                />
+              )}
             </TabsContent>
             
             <TabsContent value="projects" className="mt-6">

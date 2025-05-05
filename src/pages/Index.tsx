@@ -1,4 +1,3 @@
-
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,8 @@ import { Link } from "react-router-dom";
 import { Users, Code, Search, MessageSquare, Globe, Briefcase, Shield, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Animation variants
 const fadeIn = {
@@ -29,6 +30,41 @@ const staggerContainer = {
 };
 
 export default function Index() {
+  const [userCount, setUserCount] = useState<number>(0);
+  const [projectCount, setProjectCount] = useState<number>(0);
+  
+  useEffect(() => {
+    async function fetchCounts() {
+      try {
+        // Fetch user count
+        const { count: usersCount, error: userError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        
+        if (userError) {
+          console.error('Error fetching user count:', userError);
+        } else {
+          setUserCount(usersCount || 0);
+        }
+        
+        // Fetch project count
+        const { count: projectsCount, error: projectError } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true });
+        
+        if (projectError) {
+          console.error('Error fetching project count:', projectError);
+        } else {
+          setProjectCount(projectsCount || 0);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    }
+    
+    fetchCounts();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-background dark:bg-[#0B101E]">
       <NavBar />
@@ -60,7 +96,7 @@ export default function Index() {
                   variants={fadeIn}
                   className="flex flex-col sm:flex-row gap-3 pt-4"
                 >
-                  <Link to="/signup">
+                  <Link to="/auth">
                     <Button size="lg" className="bg-primary hover:bg-primary/90">
                       Get Started Free
                     </Button>
@@ -77,11 +113,11 @@ export default function Index() {
                 className="mx-auto lg:mr-0 flex items-center justify-center p-4 bg-secondary/50 rounded-lg shadow-xl"
               >
                 <img 
-                  alt="Students collaborating" 
-                  className="rounded-lg shadow-lg object-cover"
-                  src="public/lovable-uploads/1a6dea47-e932-40e4-b0c2-422fcfd2b862.png"
+                  alt="SkillBridge Logo" 
+                  className="rounded-lg shadow-lg object-contain w-full max-w-md"
+                  src="/lovable-uploads/32cf22e0-973a-4e66-bd4d-4d29bc44a967.png"
                   width={500}
-                  height={400}
+                  height={500}
                 />
               </motion.div>
             </div>
@@ -99,12 +135,12 @@ export default function Index() {
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
               <motion.div variants={fadeIn} className="p-6 bg-card dark:bg-card/30 rounded-lg shadow-sm">
-                <h3 className="text-3xl font-bold text-primary">15,000+</h3>
-                <p className="text-muted-foreground">Active Professionals</p>
+                <h3 className="text-3xl font-bold text-primary">{userCount}+</h3>
+                <p className="text-muted-foreground">Users Registered</p>
               </motion.div>
               <motion.div variants={fadeIn} className="p-6 bg-card dark:bg-card/30 rounded-lg shadow-sm">
-                <h3 className="text-3xl font-bold text-primary">50,000+</h3>
-                <p className="text-muted-foreground">Work Opportunities</p>
+                <h3 className="text-3xl font-bold text-primary">{projectCount}+</h3>
+                <p className="text-muted-foreground">Projects Submitted</p>
               </motion.div>
               <motion.div variants={fadeIn} className="p-6 bg-card dark:bg-card/30 rounded-lg shadow-sm">
                 <h3 className="text-3xl font-bold text-primary">120+</h3>
@@ -237,9 +273,9 @@ export default function Index() {
               
               <motion.div variants={fadeIn} className="relative flex flex-col items-center text-center">
                 <div className="bg-primary text-white rounded-full w-10 h-10 flex items-center justify-center font-bold mb-4">3</div>
-                <h3 className="text-xl font-semibold mb-2">Complete Work & Get Paid</h3>
+                <h3 className="text-xl font-semibold mb-2">Complete Work & Get Rated</h3>
                 <p className="text-muted-foreground">
-                  Deliver quality work and receive payment through our secure platform
+                  Deliver quality work and receive rating through our secure platform
                 </p>
               </motion.div>
             </motion.div>
@@ -251,7 +287,7 @@ export default function Index() {
               variants={fadeIn}
               className="mt-12 text-center"
             >
-              <Link to="/signup">
+              <Link to="/auth">
                 <Button size="lg" className="bg-primary hover:bg-primary/90">
                   Get Started Now
                 </Button>
@@ -296,10 +332,10 @@ export default function Index() {
                     </p>
                     <div className="flex items-center gap-3 mt-6">
                       <Avatar>
-                        <AvatarFallback>JD</AvatarFallback>
+                        <AvatarFallback>SR</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">John Doe</p>
+                        <p className="font-semibold">Suresh Reddy</p>
                         <p className="text-sm text-muted-foreground">Full Stack Developer</p>
                       </div>
                     </div>
@@ -318,10 +354,10 @@ export default function Index() {
                     </p>
                     <div className="flex items-center gap-3 mt-6">
                       <Avatar>
-                        <AvatarFallback>ES</AvatarFallback>
+                        <AvatarFallback>PR</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">Emily Smith</p>
+                        <p className="font-semibold">Priya Rao</p>
                         <p className="text-sm text-muted-foreground">UX/UI Designer</p>
                       </div>
                     </div>
@@ -340,10 +376,10 @@ export default function Index() {
                     </p>
                     <div className="flex items-center gap-3 mt-6">
                       <Avatar>
-                        <AvatarFallback>ML</AvatarFallback>
+                        <AvatarFallback>VK</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">Michael Lee</p>
+                        <p className="font-semibold">Venkat Kumar</p>
                         <p className="text-sm text-muted-foreground">Marketing Specialist</p>
                       </div>
                     </div>
@@ -371,7 +407,7 @@ export default function Index() {
                 Join SkillBridge's innovative platform and be part of something that's redefining the future of work
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/signup">
+                <Link to="/auth">
                   <Button size="lg" variant="outline" className="bg-white text-primary hover:bg-white/90">
                     Create Your Account
                   </Button>

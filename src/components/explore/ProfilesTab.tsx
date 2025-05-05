@@ -4,11 +4,11 @@ import { ProfileCard } from "./ProfileCard";
 
 interface Profile {
   id: string;
-  name: string;
+  full_name: string;
   role: string;
   department: string;
-  avatar: string;
-  skills: string[];
+  avatar_url?: string;
+  skills?: string[];
 }
 
 interface ProfilesTabProps {

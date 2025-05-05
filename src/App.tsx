@@ -10,7 +10,6 @@ import NewProject from "@/pages/NewProject";
 import UserProfile from "@/pages/UserProfile";
 import ProfileSetup from "@/pages/ProfileSetup";
 import Dashboard from "@/pages/Dashboard";
-import Login from "@/pages/Login";
 
 function App() {
   return (
