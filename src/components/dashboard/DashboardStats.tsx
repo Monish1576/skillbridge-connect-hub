@@ -51,7 +51,7 @@ export const DashboardStats = () => {
   const { user } = useAuth();
   const [totalProjects, setTotalProjects] = useState<number>(0);
   const [totalUsers, setTotalUsers] = useState<number>(0);
-  const [totalDeadlines, setTotalDeadlines] = useState<number>(0);
+  const [totalConnections, setTotalConnections] = useState<number>(0);
   const [totalSkills, setTotalSkills] = useState<number>(0);
   const [activityData, setActivityData] = useState([
     { name: 'Mon', projects: 0 },
@@ -85,23 +85,40 @@ export const DashboardStats = () => {
         if (usersError) console.error('Error fetching users:', usersError);
         else setTotalUsers(usersCount || 0);
         
-        // For now, we'll use placeholder values for deadlines and skills
-        // These would typically come from other tables in your database
-        setTotalDeadlines(0);
-        setTotalSkills(0);
+        // Get connections from localStorage
+        if (user) {
+          const connectionsString = localStorage.getItem('connections') || '[]';
+          const connections = JSON.parse(connectionsString);
+          const userConnections = connections.filter((conn: string) => conn.startsWith(user.id));
+          setTotalConnections(userConnections.length);
+        }
+        
+        // Get skills count
+        if (user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('skills')
+            .eq('id', user.id)
+            .single();
+            
+          if (error) console.error('Error fetching skills:', error);
+          else setTotalSkills(data?.skills?.length || 0);
+        }
         
         // Generate weekly activity data
-        // This would ideally come from a projects table with timestamps
         const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const today = new Date();
-        const dayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
         
-        // For now, we'll generate random data for the chart
-        // In a real app, you would query your database for this data
+        // Create weekly data with random activity (will be replaced with real data)
         const weekActivity = daysOfWeek.map((day, index) => {
+          // Generate higher activity for weekdays, lower for weekends
+          const isWeekday = index > 0 && index < 6;
+          const projectCount = index === currentDay ? 3 : (isWeekday ? Math.floor(Math.random() * 3) + 1 : Math.floor(Math.random() * 2));
+          
           return {
             name: day,
-            projects: 0 // Start with 0, will be updated if there's actual data
+            projects: projectCount
           };
         });
         
@@ -128,17 +145,17 @@ export const DashboardStats = () => {
           icon={<Activity className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
-          title="Team Members" 
+          title="Network" 
           value={totalUsers}
           icon={<Users className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
-          title="Upcoming Deadlines" 
-          value={totalDeadlines}
+          title="Connections" 
+          value={totalConnections}
           icon={<Calendar className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
-          title="Skills Endorsed" 
+          title="Skills" 
           value={totalSkills}
           icon={<BookOpen className="h-5 w-5 text-primary" />} 
         />

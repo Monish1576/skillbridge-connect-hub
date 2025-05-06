@@ -51,12 +51,6 @@ export function ProfileCard({ profile }: ProfileCardProps) {
               <a href={`tel:${profile.phone}`} className="hover:underline">{profile.phone}</a>
             </div>
           )}
-          {profile.email && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
-            </div>
-          )}
         </div>
         
         <div className="flex flex-wrap gap-2 mb-4">

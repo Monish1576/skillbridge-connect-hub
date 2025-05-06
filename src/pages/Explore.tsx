@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
@@ -17,7 +16,6 @@ interface Profile {
   department: string;
   avatar_url?: string;
   skills?: string[];
-  email?: string;
   phone?: string;
 }
 
@@ -37,7 +35,7 @@ export default function Explore() {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, role, department, avatar_url, skills, phone, email');
+          .select('id, full_name, role, department, avatar_url, skills, phone');
         
         if (error) {
           console.error('Error fetching profiles:', error);

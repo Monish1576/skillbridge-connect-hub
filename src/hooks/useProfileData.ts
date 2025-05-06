@@ -55,6 +55,17 @@ export function useProfileData(userId: string | undefined) {
           return;
         }
 
+        // Fetch user email from auth.users if available
+        let email = null;
+        try {
+          const { data: userData, error: userError } = await supabase.auth.getUser(userId);
+          if (!userError && userData) {
+            email = userData.user?.email || null;
+          }
+        } catch (error) {
+          console.error('Could not fetch user email:', error);
+        }
+
         // Fetch user's projects
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
@@ -66,7 +77,10 @@ export function useProfileData(userId: string | undefined) {
         }
 
         // Set the profile and projects data
-        setProfile(profileData);
+        setProfile({
+          ...profileData,
+          email: email || profileData.email
+        });
         setUserProjects(projectsData || []);
       } catch (error) {
         console.error('Unexpected error:', error);

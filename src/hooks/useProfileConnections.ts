@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,14 +11,21 @@ export function useProfileConnections(userId: string | undefined) {
   const [isConnected, setIsConnected] = useState(false);
   const [connectLoading, setConnectLoading] = useState(false);
 
+  // Check connection status when component mounts
+  useEffect(() => {
+    if (user && userId) {
+      checkConnectionStatus();
+    }
+  }, [user, userId]);
+
   // Check connection status from localStorage
   const checkConnectionStatus = () => {
-    if (user && user.id !== userId) {
-      const connectionsString = localStorage.getItem('connections');
-      if (connectionsString) {
-        const connections = JSON.parse(connectionsString);
-        return connections.includes(`${user.id}-${userId}`);
-      }
+    if (user && userId && user.id !== userId) {
+      const connectionsString = localStorage.getItem('connections') || '[]';
+      const connections = JSON.parse(connectionsString);
+      const isConnected = connections.includes(`${user.id}-${userId}`);
+      setIsConnected(isConnected);
+      return isConnected;
     }
     return false;
   };
@@ -69,7 +76,7 @@ export function useProfileConnections(userId: string | undefined) {
   };
 
   return {
-    isConnected: checkConnectionStatus(),
+    isConnected,
     checkConnectionStatus,
     connectLoading,
     handleConnectClick,
