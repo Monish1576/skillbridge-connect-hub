@@ -12,6 +12,7 @@ import ProfileSetup from "@/pages/ProfileSetup";
 import Dashboard from "@/pages/Dashboard";
 import About from "@/pages/About";
 import SignUp from "@/pages/SignUp";
+import FeatureComingSoon from "@/pages/FeatureComingSoon";
 import React from "react";
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
             <Route path="/login" element={<Navigate to="/auth" replace />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/about" element={<About />} />
+            <Route path="/feature-coming-soon/:feature" element={<FeatureComingSoon />} />
           </Routes>
           <Toaster />
         </Router>

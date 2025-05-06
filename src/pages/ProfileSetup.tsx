@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,9 +7,12 @@ import { Logo } from "@/components/Logo";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [profileData, setProfileData] = useState({
     fullName: "",
     role: "",
@@ -26,22 +28,63 @@ export default function ProfileSetup() {
   });
 
   const [previewing, setPreviewing] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Load existing user data if available
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-      const parsedData = JSON.parse(userData);
-      setProfileData(prev => ({
-        ...prev,
-        ...parsedData
-      }));
-      
-      if (parsedData.profilePicture) {
-        setPreviewing(parsedData.profilePicture);
-      }
+    if (!user) {
+      toast.error("You need to be logged in to setup your profile");
+      navigate('/login');
+      return;
     }
-  }, []);
+
+    // Fetch existing profile data
+    const fetchProfileData = async () => {
+      try {
+        // First try to get from localStorage
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+          const parsedData = JSON.parse(userData);
+          setProfileData(prev => ({
+            ...prev,
+            ...parsedData
+          }));
+          
+          if (parsedData.profilePicture) {
+            setPreviewing(parsedData.profilePicture);
+          }
+        }
+
+        // Then fetch from Supabase if available
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else if (data) {
+          setProfileData(prev => ({
+            ...prev,
+            fullName: data.full_name || prev.fullName,
+            role: data.role || prev.role,
+            department: data.department || prev.department,
+            bio: data.bio || prev.bio,
+            phone: data.phone || prev.phone,
+            skills: data.skills ? data.skills.join(', ') : prev.skills,
+          }));
+
+          if (data.avatar_url) {
+            setPreviewing(data.avatar_url);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, [user, navigate]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -62,22 +105,59 @@ export default function ProfileSetup() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Update userData with new profile data
-    const updatedUserData = {
-      ...profileData,
-      profilePicture: previewing
-    };
+    if (!user) {
+      toast.error("You need to be logged in to update your profile");
+      return;
+    }
     
-    // Save to localStorage
-    localStorage.setItem('userData', JSON.stringify(updatedUserData));
-    localStorage.setItem('isLoggedIn', 'true');
+    setLoading(true);
     
-    console.log("Profile setup submitted:", updatedUserData);
-    toast.success("Profile setup complete!");
-    navigate("/dashboard");
+    try {
+      // Prepare skills array from comma-separated string
+      const skillsArray = profileData.skills
+        .split(',')
+        .map(skill => skill.trim())
+        .filter(skill => skill !== '');
+      
+      // Update Supabase profile
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          full_name: profileData.fullName,
+          role: profileData.role,
+          department: profileData.department,
+          bio: profileData.bio,
+          phone: profileData.phone,
+          skills: skillsArray,
+          // Add other fields as needed
+        });
+      
+      if (error) {
+        console.error("Error updating profile:", error);
+        toast.error("Failed to update profile");
+        return;
+      }
+      
+      // Update localStorage for UI components
+      const updatedUserData = {
+        ...profileData,
+        profilePicture: previewing,
+        skills: skillsArray
+      };
+      
+      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+      toast.success("Profile updated successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

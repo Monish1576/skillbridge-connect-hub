@@ -14,33 +14,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, User, Bell, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth";
 
 export function NavBar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const { user, loading, signOut } = useAuth();
+  const [profileData, setProfileData] = useState<any>(null);
   
   useEffect(() => {
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loggedIn);
-    
-    if (loggedIn) {
-      const user = localStorage.getItem('userData');
+    // When the user state from auth context changes or the path changes,
+    // fetch the profile data from Supabase or localStorage
+    const fetchProfileData = async () => {
       if (user) {
-        setUserData(JSON.parse(user));
+        try {
+          // Try to get profile from localStorage
+          const storedProfile = localStorage.getItem('userData');
+          if (storedProfile) {
+            setProfileData(JSON.parse(storedProfile));
+          }
+        } catch (error) {
+          console.error("Error fetching profile data:", error);
+        }
+      } else {
+        setProfileData(null);
       }
-    }
-  }, [location.pathname]); // Re-check on route change
+    };
+
+    fetchProfileData();
+  }, [user, location.pathname]);
   
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('userData');
-    setIsLoggedIn(false);
-    setUserData(null);
-    toast.success("Logged out successfully");
+  const handleLogout = async () => {
+    await signOut();
+    setProfileData(null);
     navigate("/");
   };
 
@@ -102,7 +110,7 @@ export function NavBar() {
           </nav>
           
           <div className="flex items-center gap-2">
-            {isLoggedIn && (
+            {!loading && user && (
               <>
                 <Button 
                   variant="ghost" 
@@ -125,14 +133,16 @@ export function NavBar() {
             
             <ThemeToggle />
             
-            {isLoggedIn && userData ? (
+            {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={userData.profilePicture} alt={userData.fullName} />
+                      <AvatarImage src={profileData?.profilePicture} alt={profileData?.fullName || user.email} />
                       <AvatarFallback>
-                        {userData.fullName.split(' ').map((n: string) => n[0]).join('')}
+                        {profileData?.fullName 
+                          ? profileData.fullName.split(' ').map((n: string) => n[0]).join('')
+                          : user.email?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -140,8 +150,8 @@ export function NavBar() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{userData.fullName}</p>
-                      <p className="text-sm text-muted-foreground">{userData.email}</p>
+                      <p className="font-medium">{profileData?.fullName || user.email}</p>
+                      <p className="text-sm text-muted-foreground">{profileData?.email || user.email}</p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />

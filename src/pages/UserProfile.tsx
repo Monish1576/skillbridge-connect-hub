@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
@@ -93,11 +92,12 @@ export default function UserProfile() {
   }, [userId]);
 
   const handleConnectClick = () => {
-    toast.success("Connection request sent!");
+    navigate("/feature-coming-soon/connections");
+    toast.info("Connection feature will be available soon!");
   };
 
   const handleMessageClick = () => {
-    toast.info("Direct messaging will be available soon!");
+    navigate("/feature-coming-soon/messages");
   };
 
   if (loading) {
@@ -306,4 +306,3 @@ export default function UserProfile() {
     </div>
   );
 }
-
