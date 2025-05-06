@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
 import { Footer } from "@/components/Footer";
 import { SkillTag } from "@/components/SkillTag";
@@ -8,32 +8,88 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, Calendar, GraduationCap, Mail, MapPin, User, Users } from "lucide-react";
+import { Briefcase, Calendar, GraduationCap, Mail, MapPin, Phone, User, Users } from "lucide-react";
 import { toast } from "sonner";
-import { profiles, projects } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  role: string;
+  department: string;
+  bio?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  avatar_url?: string;
+  skills?: string[];
+  joined_at?: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  image?: string;
+  skills?: string[];
+}
 
 export default function UserProfile() {
   const { userId } = useParams();
-  const [profile, setProfile] = useState<any>(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userProjects, setUserProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userProjects, setUserProjects] = useState<any[]>([]);
 
   useEffect(() => {
-    // Simulating API call to fetch user profile
-    setLoading(true);
-    setTimeout(() => {
-      const foundProfile = profiles.find(p => p.id === userId);
-      if (foundProfile) {
-        setProfile(foundProfile);
-        // Filter projects that may belong to this user (for mock data)
-        // Convert string IDs to numbers for comparison
-        const userIdNum = parseInt(foundProfile.id);
-        const profilesLength = profiles.length;
-        const filteredProjects = projects.filter((_, index) => index % profilesLength === (userIdNum - 1) % profilesLength);
-        setUserProjects(filteredProjects);
+    async function fetchProfileData() {
+      try {
+        setLoading(true);
+
+        // Fetch user profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          if (profileError.code === 'PGRST116') {
+            toast.error('User profile not found');
+          } else {
+            toast.error('Error loading profile data');
+          }
+          return;
+        }
+
+        // Fetch user's projects
+        const { data: projectsData, error: projectsError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', userId);
+
+        if (projectsError) {
+          console.error('Error fetching projects:', projectsError);
+        }
+
+        // Set the profile and projects data
+        setProfile(profileData);
+        setUserProjects(projectsData || []);
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        toast.error('An unexpected error occurred');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }, 500);
+    }
+
+    if (userId) {
+      fetchProfileData();
+    }
   }, [userId]);
 
   const handleConnectClick = () => {
@@ -88,14 +144,14 @@ export default function UserProfile() {
           {/* Profile Header */}
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <Avatar className="h-32 w-32 border-4 border-background">
-              <AvatarImage src={profile.avatar} alt={profile.name} />
-              <AvatarFallback className="text-3xl">{profile.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+              <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+              <AvatarFallback className="text-3xl">{profile.full_name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
             </Avatar>
             <div className="space-y-2 text-center md:text-left">
-              <h1 className="text-3xl font-bold">{profile.name}</h1>
+              <h1 className="text-3xl font-bold">{profile.full_name}</h1>
               <p className="text-xl text-muted-foreground">{profile.role} • {profile.department}</p>
               <div className="flex flex-wrap justify-center md:justify-start gap-2 my-3">
-                {profile.skills.map((skill: string) => (
+                {profile.skills && profile.skills.map((skill: string) => (
                   <SkillTag key={skill} skill={skill} />
                 ))}
               </div>
@@ -124,30 +180,33 @@ export default function UserProfile() {
                   <GraduationCap className="h-5 w-5 text-muted-foreground" />
                   <span>{profile.department}</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="h-5 w-5 text-muted-foreground" />
-                  <span>University Campus</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
-                  <span>{profile.name.toLowerCase().replace(" ", ".")}@university.edu</span>
-                </div>
+                {profile.location && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <span>{profile.location}</span>
+                  </div>
+                )}
+                {profile.email && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span>{profile.email}</span>
+                  </div>
+                )}
+                {profile.phone && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span>{profile.phone}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <span>Joined January 2023</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <span>35 Connections</span>
+                  <span>Joined {profile.joined_at ? new Date(profile.joined_at).toLocaleDateString() : 'recently'}</span>
                 </div>
 
                 <div className="pt-4">
                   <h3 className="font-semibold mb-2">Bio</h3>
                   <p className="text-muted-foreground">
-                    {profile.role === "Student" 
-                      ? `A passionate ${profile.department} student looking to collaborate on innovative projects and expand my knowledge in ${profile.skills.join(", ")}.`
-                      : `Experienced ${profile.department} professional with expertise in ${profile.skills.join(", ")}. Always looking to mentor students and collaborate on research.`
-                    }
+                    {profile.bio || `${profile.full_name} hasn't added a bio yet.`}
                   </p>
                 </div>
               </CardContent>
@@ -168,21 +227,14 @@ export default function UserProfile() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {userProjects.map(project => (
                         <Card key={project.id}>
-                          <div className="aspect-video overflow-hidden rounded-t-lg">
-                            <img 
-                              src={project.image} 
-                              alt={project.title} 
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
                           <CardContent className="p-4">
                             <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
                             <p className="text-muted-foreground text-sm mb-3">{project.description}</p>
                             <div className="flex flex-wrap gap-1 mb-3">
-                              {project.skills.slice(0, 3).map((skill: string) => (
+                              {project.skills && project.skills.slice(0, 3).map((skill: string) => (
                                 <SkillTag key={skill} skill={skill} size="sm" />
                               ))}
-                              {project.skills.length > 3 && (
+                              {project.skills && project.skills.length > 3 && (
                                 <span className="text-xs bg-secondary text-secondary-foreground px-1.5 py-0.5 rounded-full font-medium">
                                   +{project.skills.length - 3} more
                                 </span>
@@ -203,7 +255,7 @@ export default function UserProfile() {
                         <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/60 mb-4" />
                         <h3 className="font-semibold text-lg mb-2">No Projects Yet</h3>
                         <p className="text-muted-foreground mb-4">
-                          {profile.name} hasn't added any projects to their profile yet.
+                          {profile.full_name} hasn't added any projects to their profile yet.
                         </p>
                       </CardContent>
                     </Card>
@@ -213,57 +265,16 @@ export default function UserProfile() {
                 <TabsContent value="experience" className="mt-6">
                   <h2 className="text-xl font-semibold mb-4">Experience</h2>
                   <Card>
-                    <CardContent className="p-6 space-y-6">
-                      {profile.role === "Student" ? (
-                        <>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>UL</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">Research Assistant</h3>
-                              <p className="text-muted-foreground">University Laboratory</p>
-                              <p className="text-sm text-muted-foreground">Sep 2022 - Present</p>
-                              <p className="mt-2">Assisting with research projects in the field of {profile.department}.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>LI</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">Summer Intern</h3>
-                              <p className="text-muted-foreground">Local Industry</p>
-                              <p className="text-sm text-muted-foreground">Jun 2022 - Aug 2022</p>
-                              <p className="mt-2">Gained practical experience in {profile.skills[0]} and {profile.skills[1]}.</p>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>UN</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">{profile.role}</h3>
-                              <p className="text-muted-foreground">University</p>
-                              <p className="text-sm text-muted-foreground">Sep 2018 - Present</p>
-                              <p className="mt-2">Teaching and researching in the field of {profile.department}, with focus on {profile.skills.slice(0, 2).join(" and ")}.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>RI</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">Senior Researcher</h3>
-                              <p className="text-muted-foreground">Research Institute</p>
-                              <p className="text-sm text-muted-foreground">Jan 2015 - Aug 2018</p>
-                              <p className="mt-2">Led research projects in {profile.skills[0]} and {profile.skills[1]}.</p>
-                            </div>
-                          </div>
-                        </>
+                    <CardContent className="p-6 text-center">
+                      <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/60 mb-4" />
+                      <h3 className="font-semibold text-lg mb-2">No Experience Added</h3>
+                      <p className="text-muted-foreground mb-4">
+                        {profile.full_name} hasn't added any experience details yet.
+                      </p>
+                      {user && user.id === userId && (
+                        <Button variant="outline" size="sm" onClick={() => navigate('/profile-setup')}>
+                          Add Experience
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
@@ -272,44 +283,16 @@ export default function UserProfile() {
                 <TabsContent value="education" className="mt-6">
                   <h2 className="text-xl font-semibold mb-4">Education</h2>
                   <Card>
-                    <CardContent className="p-6 space-y-6">
-                      {profile.role === "Student" ? (
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-10 w-10 mt-1">
-                            <AvatarFallback>UN</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold">Bachelor's in {profile.department}</h3>
-                            <p className="text-muted-foreground">University</p>
-                            <p className="text-sm text-muted-foreground">Sep 2020 - Present</p>
-                            <p className="mt-2">Focusing on {profile.skills.slice(0, 2).join(" and ")} with excellent academic standing.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>UN</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">PhD in {profile.department}</h3>
-                              <p className="text-muted-foreground">University</p>
-                              <p className="text-sm text-muted-foreground">Sep 2012 - Jun 2015</p>
-                              <p className="mt-2">Research focused on {profile.skills[0]} and its applications in the field.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-4">
-                            <Avatar className="h-10 w-10 mt-1">
-                              <AvatarFallback>UN</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <h3 className="font-semibold">Master's in {profile.department}</h3>
-                              <p className="text-muted-foreground">University</p>
-                              <p className="text-sm text-muted-foreground">Sep 2010 - Jun 2012</p>
-                              <p className="mt-2">Specialized in {profile.skills[1]} with honors.</p>
-                            </div>
-                          </div>
-                        </>
+                    <CardContent className="p-6 text-center">
+                      <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground/60 mb-4" />
+                      <h3 className="font-semibold text-lg mb-2">No Education Added</h3>
+                      <p className="text-muted-foreground mb-4">
+                        {profile.full_name} hasn't added any education details yet.
+                      </p>
+                      {user && user.id === userId && (
+                        <Button variant="outline" size="sm" onClick={() => navigate('/profile-setup')}>
+                          Add Education
+                        </Button>
                       )}
                     </CardContent>
                   </Card>

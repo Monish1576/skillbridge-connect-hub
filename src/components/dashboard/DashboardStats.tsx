@@ -11,16 +11,16 @@ import {
   ResponsiveContainer 
 } from "recharts";
 import { Activity, Users, Calendar, BookOpen } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 
 type StatCardProps = {
   title: string;
   value: string | number;
-  change?: string;
   icon: React.ReactNode;
-  trend?: "up" | "down" | "neutral";
 }
 
-const StatCard = ({ title, value, change, icon, trend }: StatCardProps) => {
+const StatCard = ({ title, value, icon }: StatCardProps) => {
   const [animate, setAnimate] = useState(false);
   
   useEffect(() => {
@@ -37,11 +37,6 @@ const StatCard = ({ title, value, change, icon, trend }: StatCardProps) => {
             <h3 className={`text-2xl font-bold mt-1 transition-all duration-1000 ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
               {value}
             </h3>
-            {change && (
-              <p className={`text-xs mt-1 ${trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-muted-foreground"}`}>
-                {trend === "up" ? "↑" : trend === "down" ? "↓" : ""} {change} since last month
-              </p>
-            )}
           </div>
           <div className="bg-primary/10 p-2 rounded-full">
             {icon}
@@ -53,6 +48,11 @@ const StatCard = ({ title, value, change, icon, trend }: StatCardProps) => {
 };
 
 export const DashboardStats = () => {
+  const { user } = useAuth();
+  const [totalProjects, setTotalProjects] = useState<number>(0);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [totalDeadlines, setTotalDeadlines] = useState<number>(0);
+  const [totalSkills, setTotalSkills] = useState<number>(0);
   const [activityData, setActivityData] = useState([
     { name: 'Mon', projects: 0 },
     { name: 'Tue', projects: 0 },
@@ -62,53 +62,84 @@ export const DashboardStats = () => {
     { name: 'Sat', projects: 0 },
     { name: 'Sun', projects: 0 },
   ]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Animate the chart data
-    const timer = setTimeout(() => {
-      setActivityData([
-        { name: 'Mon', projects: 4 },
-        { name: 'Tue', projects: 3 },
-        { name: 'Wed', projects: 7 },
-        { name: 'Thu', projects: 5 },
-        { name: 'Fri', projects: 6 },
-        { name: 'Sat', projects: 2 },
-        { name: 'Sun', projects: 1 },
-      ]);
-    }, 500);
+    async function fetchDashboardData() {
+      try {
+        setLoading(true);
+        
+        // Fetch total projects count
+        const { count: projectsCount, error: projectsError } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true });
+        
+        if (projectsError) console.error('Error fetching projects:', projectsError);
+        else setTotalProjects(projectsCount || 0);
+        
+        // Fetch total users count
+        const { count: usersCount, error: usersError } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        
+        if (usersError) console.error('Error fetching users:', usersError);
+        else setTotalUsers(usersCount || 0);
+        
+        // For now, we'll use placeholder values for deadlines and skills
+        // These would typically come from other tables in your database
+        setTotalDeadlines(0);
+        setTotalSkills(0);
+        
+        // Generate weekly activity data
+        // This would ideally come from a projects table with timestamps
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const today = new Date();
+        const dayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // For now, we'll generate random data for the chart
+        // In a real app, you would query your database for this data
+        const weekActivity = daysOfWeek.map((day, index) => {
+          return {
+            name: day,
+            projects: 0 // Start with 0, will be updated if there's actual data
+          };
+        });
+        
+        setActivityData(weekActivity);
+        
+      } catch (error) {
+        console.error('Error in fetchDashboardData:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    return () => clearTimeout(timer);
-  }, []);
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Total Projects" 
-          value="24" 
-          change="12%" 
-          trend="up"
+          value={totalProjects} 
           icon={<Activity className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
           title="Team Members" 
-          value="12" 
-          change="8%" 
-          trend="up"
+          value={totalUsers}
           icon={<Users className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
           title="Upcoming Deadlines" 
-          value="8" 
-          change="5%" 
-          trend="down"
+          value={totalDeadlines}
           icon={<Calendar className="h-5 w-5 text-primary" />} 
         />
         <StatCard 
           title="Skills Endorsed" 
-          value="36" 
-          change="24%" 
-          trend="up"
+          value={totalSkills}
           icon={<BookOpen className="h-5 w-5 text-primary" />} 
         />
       </div>

@@ -1,15 +1,10 @@
 
-import { ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectsGrid } from "@/components/dashboard/ProjectsGrid";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { MessagesPanel } from "@/components/dashboard/MessagesPanel";
 
-type DashboardTabsProps = {
-  userProjects: any[];
-};
-
-export const DashboardTabs = ({ userProjects }: DashboardTabsProps) => {
+export const DashboardTabs = () => {
   return (
     <Tabs defaultValue="projects">
       <TabsList className="grid w-full max-w-md grid-cols-3">
@@ -19,7 +14,7 @@ export const DashboardTabs = ({ userProjects }: DashboardTabsProps) => {
       </TabsList>
       
       <TabsContent value="projects" className="mt-6 space-y-4">
-        <ProjectsGrid userProjects={userProjects} />
+        <ProjectsGrid />
       </TabsContent>
       
       <TabsContent value="notifications" className="mt-6">
