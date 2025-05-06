@@ -37,7 +37,7 @@ export default function Explore() {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, role, department, avatar_url, skills, phone');
+          .select('id, full_name, role, department, avatar_url, skills, phone, email');
         
         if (error) {
           console.error('Error fetching profiles:', error);
