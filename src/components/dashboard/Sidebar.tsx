@@ -5,12 +5,14 @@ import { SkillTag } from "@/components/SkillTag";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Settings } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth";
 
 export const DashboardSidebar = ({ userData }: { userData: any }) => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.setItem('isLoggedIn', 'false');
+  const handleLogout = async () => {
+    await signOut();
     toast.success("Logged out successfully");
     navigate('/login');
   };
@@ -27,10 +29,10 @@ export const DashboardSidebar = ({ userData }: { userData: any }) => {
           <AvatarFallback>
             {userData?.fullName 
               ? userData.fullName.split(" ").map((n: string) => n[0]).join("")
-              : "U"}
+              : userData.email ? userData.email.substring(0, 2).toUpperCase() : "U"}
           </AvatarFallback>
         </Avatar>
-        <h2 className="text-xl font-bold">{userData?.fullName || "User"}</h2>
+        <h2 className="text-xl font-bold">{userData?.fullName || userData.email}</h2>
         <p className="text-sm text-muted-foreground">
           {userData?.department || ""} • {userData?.role || ""}
         </p>

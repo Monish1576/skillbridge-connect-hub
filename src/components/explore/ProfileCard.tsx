@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SkillTag } from "@/components/SkillTag";
+import { Mail, Phone } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -12,6 +13,8 @@ interface Profile {
   department: string;
   avatar_url?: string;
   skills?: string[];
+  email?: string;
+  phone?: string;
 }
 
 interface ProfileCardProps {
@@ -39,6 +42,23 @@ export function ProfileCard({ profile }: ProfileCardProps) {
             </p>
           </div>
         </div>
+        
+        {/* Contact info */}
+        <div className="mb-4 space-y-2">
+          {profile.email && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              <a href={`mailto:${profile.email}`} className="hover:underline truncate">{profile.email}</a>
+            </div>
+          )}
+          {profile.phone && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Phone className="h-4 w-4" />
+              <a href={`tel:${profile.phone}`} className="hover:underline">{profile.phone}</a>
+            </div>
+          )}
+        </div>
+        
         <div className="flex flex-wrap gap-2 mb-4">
           {profile.skills && profile.skills.length > 0 ? (
             <>

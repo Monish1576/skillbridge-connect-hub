@@ -17,6 +17,8 @@ interface Profile {
   department: string;
   avatar_url?: string;
   skills?: string[];
+  email?: string;
+  phone?: string;
 }
 
 export default function Explore() {
@@ -35,7 +37,7 @@ export default function Explore() {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, role, department, avatar_url, skills');
+          .select('id, full_name, role, department, avatar_url, skills, email, phone');
         
         if (error) {
           console.error('Error fetching profiles:', error);

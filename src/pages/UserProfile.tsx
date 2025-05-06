@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
@@ -7,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, Calendar, GraduationCap, Mail, MapPin, Phone, User, Users } from "lucide-react";
+import { Briefcase, Calendar, GraduationCap, Mail, MapPin, Phone, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -35,13 +36,22 @@ interface Project {
   skills?: string[];
 }
 
+interface Connection {
+  id: string;
+  user_id: string;
+  connected_user_id: string;
+  created_at: string;
+}
+
 export default function UserProfile() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userProjects, setUserProjects] = useState<Project[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [connectLoading, setConnectLoading] = useState(false);
 
   useEffect(() => {
     async function fetchProfileData() {
@@ -75,6 +85,22 @@ export default function UserProfile() {
           console.error('Error fetching projects:', projectsError);
         }
 
+        // Check if current user is connected to this profile
+        if (user && user.id !== userId) {
+          const { data: connectionData, error: connectionError } = await supabase
+            .from('connections')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('connected_user_id', userId)
+            .maybeSingle();
+
+          if (connectionError) {
+            console.error('Error checking connection:', connectionError);
+          } else {
+            setIsConnected(!!connectionData);
+          }
+        }
+
         // Set the profile and projects data
         setProfile(profileData);
         setUserProjects(projectsData || []);
@@ -89,11 +115,63 @@ export default function UserProfile() {
     if (userId) {
       fetchProfileData();
     }
-  }, [userId]);
+  }, [userId, user]);
 
-  const handleConnectClick = () => {
-    navigate("/feature-coming-soon/connections");
-    toast.info("Connection feature will be available soon!");
+  const handleConnectClick = async () => {
+    if (!user) {
+      navigate("/auth");
+      toast.info("Please log in to connect with users");
+      return;
+    }
+
+    if (user.id === userId) {
+      toast.info("You cannot connect with yourself");
+      return;
+    }
+
+    try {
+      setConnectLoading(true);
+
+      if (isConnected) {
+        // Disconnect
+        const { error } = await supabase
+          .from('connections')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('connected_user_id', userId);
+
+        if (error) {
+          console.error('Error disconnecting:', error);
+          toast.error('Failed to disconnect. Please try again.');
+          return;
+        }
+
+        setIsConnected(false);
+        toast.success("Successfully disconnected");
+      } else {
+        // Connect
+        const { error } = await supabase
+          .from('connections')
+          .insert({
+            user_id: user.id,
+            connected_user_id: userId,
+          });
+
+        if (error) {
+          console.error('Error connecting:', error);
+          toast.error('Failed to connect. Please try again.');
+          return;
+        }
+
+        setIsConnected(true);
+        toast.success("Successfully connected");
+      }
+    } catch (error) {
+      console.error('Error toggling connection:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setConnectLoading(false);
+    }
   };
 
   const handleMessageClick = () => {
@@ -156,10 +234,24 @@ export default function UserProfile() {
                 ))}
               </div>
               <div className="flex gap-3 pt-2 justify-center md:justify-start">
-                <Button onClick={handleConnectClick}>Connect</Button>
-                <Button variant="outline" onClick={handleMessageClick}>
-                  Message
-                </Button>
+                {user && user.id !== userId ? (
+                  <>
+                    <Button 
+                      onClick={handleConnectClick} 
+                      disabled={connectLoading}
+                      variant={isConnected ? "outline" : "default"}
+                    >
+                      {isConnected ? "Disconnect" : "Connect"}
+                    </Button>
+                    <Button variant="outline" onClick={handleMessageClick}>
+                      Message
+                    </Button>
+                  </>
+                ) : user && user.id === userId ? (
+                  <Link to="/profile-setup">
+                    <Button variant="outline">Edit Profile</Button>
+                  </Link>
+                ) : null}
               </div>
             </div>
           </div>
@@ -189,13 +281,13 @@ export default function UserProfile() {
                 {profile.email && (
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-muted-foreground" />
-                    <span>{profile.email}</span>
+                    <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
                   </div>
                 )}
                 {profile.phone && (
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span>{profile.phone}</span>
+                    <a href={`tel:${profile.phone}`} className="hover:underline">{profile.phone}</a>
                   </div>
                 )}
                 <div className="flex items-center gap-3">
