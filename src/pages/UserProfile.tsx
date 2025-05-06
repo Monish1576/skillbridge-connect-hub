@@ -70,7 +70,7 @@ export default function UserProfile() {
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
-          .eq('user_id', userId);
+          .eq('creator_id', userId);
 
         if (projectsError) {
           console.error('Error fetching projects:', projectsError);
@@ -306,3 +306,4 @@ export default function UserProfile() {
     </div>
   );
 }
+
