@@ -19,7 +19,6 @@ interface Profile {
   role: string;
   department: string;
   bio?: string;
-  email?: string;
   phone?: string;
   location?: string;
   avatar_url?: string;
@@ -34,13 +33,6 @@ interface Project {
   status: string;
   image?: string;
   skills?: string[];
-}
-
-interface Connection {
-  id: string;
-  user_id: string;
-  connected_user_id: string;
-  created_at: string;
 }
 
 export default function UserProfile() {
@@ -85,19 +77,12 @@ export default function UserProfile() {
           console.error('Error fetching projects:', projectsError);
         }
 
-        // Check if current user is connected to this profile
+        // Check connection status from localStorage
         if (user && user.id !== userId) {
-          const { data: connectionData, error: connectionError } = await supabase
-            .from('connections')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('connected_user_id', userId)
-            .maybeSingle();
-
-          if (connectionError) {
-            console.error('Error checking connection:', connectionError);
-          } else {
-            setIsConnected(!!connectionData);
+          const connectionsString = localStorage.getItem('connections');
+          if (connectionsString) {
+            const connections = JSON.parse(connectionsString);
+            setIsConnected(connections.includes(`${user.id}-${userId}`));
           }
         }
 
@@ -132,37 +117,21 @@ export default function UserProfile() {
     try {
       setConnectLoading(true);
 
+      // Store connections in localStorage 
+      const connectionsString = localStorage.getItem('connections') || '[]';
+      const connections = JSON.parse(connectionsString);
+      const connectionKey = `${user.id}-${userId}`;
+
       if (isConnected) {
         // Disconnect
-        const { error } = await supabase
-          .from('connections')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('connected_user_id', userId);
-
-        if (error) {
-          console.error('Error disconnecting:', error);
-          toast.error('Failed to disconnect. Please try again.');
-          return;
-        }
-
+        const filteredConnections = connections.filter((c: string) => c !== connectionKey);
+        localStorage.setItem('connections', JSON.stringify(filteredConnections));
         setIsConnected(false);
         toast.success("Successfully disconnected");
       } else {
         // Connect
-        const { error } = await supabase
-          .from('connections')
-          .insert({
-            user_id: user.id,
-            connected_user_id: userId,
-          });
-
-        if (error) {
-          console.error('Error connecting:', error);
-          toast.error('Failed to connect. Please try again.');
-          return;
-        }
-
+        connections.push(connectionKey);
+        localStorage.setItem('connections', JSON.stringify(connections));
         setIsConnected(true);
         toast.success("Successfully connected");
       }
@@ -276,12 +245,6 @@ export default function UserProfile() {
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <span>{profile.location}</span>
-                  </div>
-                )}
-                {profile.email && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
                   </div>
                 )}
                 {profile.phone && (
